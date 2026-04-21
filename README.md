@@ -323,7 +323,7 @@ Based on this analysis, the following indicators may be useful for detection or 
 
 This follow-up analysis helped fill in the gaps from the initial investigation.
 
-The earlier write-up identified a staged delivery and some signs that multiple components were involved, but running the payload made it clearer how those components actually interact.
+Part 1 of this investigation identified a staged delivery and some signs that multiple components were involved, but running the payload made it clearer how those components actually interact.
 
 In particular:
 
