@@ -174,6 +174,24 @@ After seeing that Deju had created a "WindowsUpdate" scheduled task, I checked T
 
 ![Persistence](Images/persistence.png)
 
+
+
+### WindowsUpdate.bat Behaviour
+
+Inspecting the contents of `WindowsUpdate.bat` revealed the following command:
+
+    start "" /min conhost.exe --headless "C:\Users\Ray Zah\AppData\Local\Microsoft\WindowsApps\MpEng.exe" "C:\Users\Ray Zah\AppData\Local\Microsoft\WindowsApps\update.dll" sunset
+
+This shows that the scheduled task is not performing network activity directly, but instead re-launching the payload in a hidden state.
+
+The use of `conhost.exe --headless` ensures that execution occurs without any visible window, reducing the likelihood of user detection.
+
+`MpEng.exe`, previously identified as a disguised Python runtime, is used to execute `update.dll`, which likely contains the core payload logic.
+
+The additional argument `sunset` suggests that execution may be controlled via parameters, potentially allowing different behaviours or modes.
+
+This confirms that the scheduled task is responsible for maintaining persistent, hidden execution of the payload rather than performing immediate external communication.
+
 ---
 
 ## Network Activity
@@ -228,38 +246,93 @@ flowchart TD
 
 ## What This Likely Is
 
-This appears to be a **multi-stage loader/backdoor setup**, rather than a standalone payload.
+This doesn’t behave like a single-purpose payload.
 
-The structure suggests the goal is to establish persistence and prepare the system for further activity, rather than carry out an immediate, visible action.
+Instead, it looks like a **multi-stage loader / backdoor-style framework** designed to establish a foothold and maintain execution over time.
+
+The use of disguised file types, staged extraction via a batch script, a bundled Python runtime, and scheduled task persistence all point towards a setup phase rather than a final objective.
+
+Rather than doing something obvious straight away, this appears to focus on **getting onto the system, staying there, and being able to run code when needed**.
+
+---
+
+## Potential Use
+
+I didn’t observe any clear command-and-control traffic during the analysis window, but the structure would support a range of follow-on activity.
+
+Based on what’s in place, this could be used for:
+
+- maintaining remote access to the system  
+- delivering additional payloads at a later stage  
+- collecting data or credentials  
+- contributing to a wider distributed system (e.g. botnet-style use)  
+
+At the point I observed it, the priority seems to be **access and persistence**, with any further activity likely dependent on timing, conditions, or external triggers.
 
 ---
 
 ## Level of Impact
 
-If this ran on a real system:
+If this were executed on a real user system, I’d consider it fully compromised.
 
-- attacker likely keeps access  
-- can run more code later  
-- possible data access or further compromise  
+Even without obvious visible behaviour:
 
-It’s quiet, not destructive, but that’s the point.
+- the attacker has a reliable way to execute code  
+- persistence is already in place  
+- the system can be used for further activity at any time  
+
+The lack of immediate impact isn’t reassuring — it’s more consistent with something designed to stay under the radar.
 
 ---
 
+## Indicators of Compromise (IOCs)
+
+Based on this analysis, the following indicators may be useful for detection or further investigation:
+
+**Files / Paths**
+- `C:\Users\<user>\AppData\Local\Microsoft\WindowsApps\MpEng.exe` (fake Defender process)
+- `C:\Users\<user>\AppData\Local\Microsoft\WindowsApps\update.dll`
+- `C:\Users\<user>\AppData\Local\Microsoft\WindowsApps\WinUpdate.bat`
+
+**Persistence**
+- Scheduled Task:
+  - Name: `Windows Update Check`
+  - Action: `WinUpdate.bat`
+  - Trigger: every 10 minutes
+
+**Execution Behaviour**
+- Use of:
+  - `conhost.exe --headless`
+- Hidden/minimised execution via:
+  - `start "" /min`
+
+**Disguised Components**
+- `.mkv` file acting as executable (WinRAR CLI)
+- `.pdf` file acting as password-protected archive
+- Batch script (`Deju`) orchestrating extraction and execution
+
+**Hash (Primary Payload Archive)**
+- *(Add your SHA256 here once calculated)*
+
+---
 ## Final Thoughts
 
-This turned out to be quite sophisticated.
+This follow-up analysis helped fill in the gaps from the initial investigation.
 
-I initially thought it was something relatively straightforward, but it turned out to be much more layered once I actually ran it.
+The earlier write-up identified a staged delivery and some signs that multiple components were involved, but running the payload made it clearer how those components actually interact.
 
-Based on the behaviour observed, this payload appears to function as a staged loader rather than a standalone attack.
+In particular:
 
-The use of disguised files, controlled extraction, and scheduled task persistence suggests it is designed to maintain access and enable further execution over time.
+- `Deju` acting as the execution controller  
+- `zhen.mkv` being used as a tool rather than a decoy  
+- the use of a password-protected archive to stage the next layer  
+- and the scheduled task maintaining repeated, hidden execution  
 
-While no clear command-and-control traffic was observed during the analysis window, this may be due to delayed execution, environmental awareness, or network behaviour not captured by the proxy.
+I didn’t observe any direct command-and-control traffic during the analysis window, but the structure in place suggests that isn’t the immediate goal.
 
-Even without immediate visible impact, this represents a meaningful compromise of the system.
+Instead, the focus appears to be on establishing a reliable execution path and maintaining access, with any further activity likely triggered later.
 
+Overall, this behaves more like a controlled foothold than a complete attack, with the capability for further activity already in place.
 
 ---
 
