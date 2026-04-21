@@ -55,10 +55,12 @@ While the process was running I noticed a .mkv file I had earlier dismissed as a
 ![Files Executing in Background](Images/zhen_mkv.png)
 
 
-The process ended with a file named MpEng.exe, which at first glance looked like Microsoft Defender, but the company name of Python Software Foundation made it clear that wasn't the case.
+The process ended with a file named MpEng.exe, which at first glance looked like Microsoft Defender, but the company name of Python Software Foundation made it clear that wasn't the case. It
 
 
 ![Initial Process Explorer view after execution](Images/16_procexp_after_exe_2026-04-20_00-20.png)
+
+It was running python script.
 
 ---
 
@@ -87,7 +89,7 @@ Checking the real file types changed everything:
 - `.pdf` → archive  
 - `Deju` → batch script  
 
-This is where it stopped looking simple.
+This is where it became clearer what was happening.
 
 ---
 
