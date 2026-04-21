@@ -168,7 +168,7 @@ This behaviour suggests the payload is attempting to locate or prepare its execu
 
 ## Persistence 
 
-After seeing that Deju had created a "WindowsUpdate" scheduled task, I checked Task Scheduler Library and confirmed that the created task is designed to run 'WindowsUpdate.bat' every 10 minutes indefinitely.
+After seeing that Deju had created a "WindowsUpdate" scheduled task, I checked Task Scheduler Library and confirmed that the created task is designed to run 'WinUpdate.bat' every 10 minutes indefinitely.
 
 **The system is now persistently compromised at user level**
 
@@ -182,7 +182,7 @@ No clearly malicious outbound traffic was observed during execution process.
 
 ![Burp showing no clearly malicious outbound traffic](Images/37_no_significant_traffic.png)
 
-I monitored traffic during the scheduled 'WindowsUpdate.bat' tasks and again, none was observed.
+I monitored traffic during the scheduled 'WinUpdate.bat' tasks and again, none was observed.
 This suggests that the payload is only operating locally at this point or is using network mechanisms not captured by the proxy.
 
 ---
