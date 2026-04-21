@@ -101,40 +101,34 @@ So not the payload itself, but something used to unpack it.
 
 ---
 
+## TAIWAN.pdf 
+
+![TAIWAN archive prompting for password](Images/34_taiwan_contents.png)
+
+Despite the name, this isn’t a PDF. It’s a password-protected archive.
+
+---
+
 ## Deju 
 
 ![Deju batch script content](Images/33_sed_Deju.png)
 
-This file is a key component in delivering the payload.
+This file is the key component in delivering the payload.
 
 It:
 
+- executes the WordPad document
+- executes zhen.mkv
 - extracts `TAIWAN.pdf`  
 - includes the password  
 - writes files into a user directory  
 - sets up persistence  
 - runs the next stage  
 
-### About the Password
-
-`TAIWAN.pdf` is password protected, and the password is written directly in this script.
-
-So:
-
-- the contents are hidden from quick inspection  
-- but the malware can still extract everything automatically  
-
-It’s there to slow analysis down, not to protect anything.
-
 ---
 
-## TAIWAN.pdf 
-
-![TAIWAN archive prompting for password](Images/Taiwan_contents.png)
-
-Despite the name, this isn’t a PDF. It’s a password-protected archive.
-
-Once unpacked, it contains a large number of files rather than one obvious payload.
+I used the password to unpack Taiwan.pdf
+It contains a large number of files rather than one obvious payload.
 
 ![1876 files](Images/1876_files.png)
 
@@ -143,25 +137,15 @@ Those files were:
 - a full Python environment  
 - standard libraries  
 - compiled modules  
-- and, MpEng.exe
+- and, **MpEng.exe**
 
 ![TAIWAN contents](Taiwan_contents.png)
 
 ---
 
-## What Actually Runs
-
-This becomes clear in Process Explorer:
+MpEng appears to be the actual payload, masquerading as Windows Defender but running python.
 
 ![Fake Defender Python runtime in Process Explorer](Images/38_fake_defender_python_runtime.png)
-
-A process called `MpEng.exe` appears.
-
-Looks like Defender… but isn’t.
-
-![Python-related modules loaded by the disguised process](Images/19_python_2026-04-20_01-32.png)
-
-It’s actually running Python.
 
 ---
 
@@ -183,13 +167,7 @@ Looks like it’s checking for things as it builds out the next stage.
 
 ![Burp showing no clearly malicious outbound traffic](Images/37_no_significant_traffic.png)
 
-I didn’t see obvious malicious traffic.
-
-That could mean:
-
-- it triggers later  
-- it depends on conditions  
-- or I didn’t run it long enough  
+No clearly malicious outbound traffic was observed during the analysis window. This may indicate delayed execution, environmental awareness, or use of network mechanisms not captured by the proxy.
 
 ---
 
@@ -225,7 +203,7 @@ Best way I can describe it:
 
 A **multi-stage loader/backdoor setup**
 
-Not just one payload — more like a setup for whatever comes next.
+Not just one payload,more like a setup for whatever comes next.
 
 ---
 
