@@ -312,7 +312,7 @@ Based on this analysis, the following indicators may be useful for detection or 
 - Batch script (`Deju`) orchestrating extraction and execution
 
 **Hash (Primary Payload Archive)**
-- *(Add your SHA256 here once calculated)*
+- *f689830f201ed1612bfda4bb48e9dfba4bde9d2c4abc724f6e9f95060797e739*
 
 ---
 ## Final Thoughts
