@@ -170,7 +170,7 @@ This behaviour suggests the payload is attempting to locate or prepare its execu
 
 ## Persistence 
 
-After seeing that Deju had created a "WindowsUpdate" scheduled task, I checked Task Scheduler Library and confirmed that the created task is designed to run 'WinUpdate.bat' every 10 minutes indefinitely.
+After seeing that Deju had created a "WinUpdate" scheduled task, I checked Task Scheduler Library and confirmed that the created task is designed to run 'WinUpdate.bat' every 10 minutes indefinitely.
 
 **The system is now persistently compromised at user level**
 
@@ -178,9 +178,9 @@ After seeing that Deju had created a "WindowsUpdate" scheduled task, I checked T
 
 
 
-### WindowsUpdate.bat Behaviour
+### WinUpdate.bat Behaviour
 
-Inspecting the contents of `WindowsUpdate.bat` revealed the following command:
+Inspecting the contents of `WinUpdate.bat` revealed the following command:
 
     start "" /min conhost.exe --headless "C:\Users\Ray Zah\AppData\Local\Microsoft\WindowsApps\MpEng.exe" "C:\Users\Ray Zah\AppData\Local\Microsoft\WindowsApps\update.dll" sunset
 
