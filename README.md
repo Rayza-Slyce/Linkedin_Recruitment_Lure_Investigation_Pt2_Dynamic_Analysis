@@ -1,4 +1,4 @@
-# Linkedin Recruitment Lure  
+# Linkedin Recruitment Lure Investigation 
 ## Part 2 – Dynamic Analysis & Payload Behaviour
 
 Date: 22nd April 2026
