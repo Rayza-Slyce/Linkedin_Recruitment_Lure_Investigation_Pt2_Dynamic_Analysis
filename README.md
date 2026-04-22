@@ -196,18 +196,25 @@ This confirms that the scheduled task is responsible for maintaining persistent,
 
 ---
 
-## Network Activity (observed)
+## Network Activity (Burp)
 
-No clearly malicious outbound traffic was observed during the execution process.
+Initial network monitoring was conducted using Burp Suite with traffic proxied from the analysis VM.
 
-The limited network activity captured appears to be standard Windows behaviour, including SmartScreen and system trust checks against Microsoft domains (e.g. `checkappexec.microsoft.com`, `ctldl.windowsupdate.com`) triggered when executing an unknown file.
+No proxy-aware HTTP/HTTPS traffic attributable to the payload was observed during:
 
-No direct command-and-control or suspicious outbound connections attributable to the payload were identified during the analysis window.
+- Initial execution of the lure
+- Subsequent execution via the scheduled task (WinUpdate.bat)
 
-![Burp showing no clearly malicious outbound traffic](Images/37_no_significant_traffic.png)
+![Burp showing no clearly malicious outbound traffic](Images/37_no_significant_traffic.png) 
 
-I monitored traffic during the scheduled 'WinUpdate.bat' tasks and again, none was observed.
-This suggests that the payload is only operating locally at this point or is using network mechanisms not captured by the proxy.
+The limited traffic captured appeared consistent with standard Windows behaviour, including SmartScreen and trust validation requests to Microsoft domains such as:
+
+`checkappexec.microsoft.com`
+`ctldl.windowsupdate.com`
+
+No evidence of command-and-control (C2) communication or suspicious outbound HTTP/HTTPS requests was identified within the proxy-monitored traffic.
+
+Since no proxy-aware traffic was observed, further packet-level inspection was required to determine whether the payload communicated using non-proxied or non-HTTP protocols.
 
 ---
 
