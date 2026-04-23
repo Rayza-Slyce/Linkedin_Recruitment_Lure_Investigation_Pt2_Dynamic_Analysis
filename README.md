@@ -217,8 +217,7 @@ Since no proxy-aware traffic was observed, further packet-level inspection was r
 
 ## Execution Flow
 
-flowchart TD
-
+```mermaid
     subgraph S1[Execution]
         A[Lure EXE executed]
         B[Decoy document shown]
