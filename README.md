@@ -217,40 +217,63 @@ Since no proxy-aware traffic was observed, further packet-level inspection was r
 
 ## Execution Flow
 
-```mermaid
 flowchart TD
-    subgraph S1[Initial execution]
-        A[User executes lure EXE]
-        B[Decoy document opens]
-        C[Deju batch script runs]
+
+    subgraph S1[Execution]
+        A[Lure EXE executed]
+        B[Decoy document shown]
+        C[Deju script runs]
         A --> B
         A --> C
     end
 
     subgraph S2[Staging]
-        D[zhen.mkv used as WinRAR CLI]
-        E[TAIWAN.pdf unlocked using embedded password]
-        F[Payload files written to WindowsApps path]
-        C --> D --> E --> F
+        D[zhen.mkv extraction]
+        E[TAIWAN.pdf unlocked]
+        F[Payload files extracted]
+        G[Files written to WindowsApps]
+        C --> D --> E --> F --> G
     end
 
     subgraph S3[Persistence]
-        G[Scheduled task created for persistence]
-        F --> G
+        H[Scheduled task created]
+        I[WinUpdate.bat written]
+        G --> H
+        G --> I
+        H --> I
     end
 
-    subgraph S4[Execution]
-        H[conhost.exe launches next stage]
-        I[MpEng.exe process starts]
-        J[MpEng.exe is a disguised Python runtime]
-        K[Python modules loaded]
-        L[Further payload logic available]
-        G --> H --> I --> J --> K --> L
+    subgraph S4[Local Execution]
+        J[Task triggers periodically]
+        K[conhost.exe headless]
+        L[MpEng.exe launched]
+        M[update.dll loaded]
+        J --> K --> L --> M
     end
 
-    M[System left with persistent execution capability]
-    L --> M
-```
+    subgraph S5[Network Activity]
+        N[Outbound traffic begins]
+        O[Telegram contacted]
+        P[C2 request getPage]
+        Q[C2 returns sunset link]
+        R[sunset.txt retrieved]
+        M --> N
+        N --> O
+        N --> P --> Q --> R
+    end
+
+    subgraph S6[Payload Delivery]
+        S[Obfuscated Python loader]
+        T[Encoded blob extracted]
+        U[Decoded and decompressed]
+        V[Final binary payload]
+        R --> S --> T --> U --> V
+    end
+
+    X[Persistent compromise with remote payload execution]
+    M --> X
+    V --> X
+
 
 ---
 
