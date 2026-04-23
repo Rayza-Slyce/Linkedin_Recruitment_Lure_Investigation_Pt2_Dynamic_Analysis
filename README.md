@@ -323,6 +323,8 @@ This behaviour is consistent with:
 
 ### Telegram Infrastructure (149.154.167.99)
 
+![Telegram IP](Images/Screenshot_20260423-170435~2.png) 
+
 Analysis of network traffic identified outbound connections to `149.154.167.99`, which resolves to Telegram infrastructure (ASN: AS62041 – Telegram Messenger Inc).
 
 - Legitimate service (Telegram Messenger network)
