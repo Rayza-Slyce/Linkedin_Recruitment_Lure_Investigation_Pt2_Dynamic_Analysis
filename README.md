@@ -20,13 +20,13 @@ Instead of one obvious payload, this is a **multi-stage setup** using:
 - a password-protected archive  
 - and a bundled Python environment running under a fake system process name  
 
-I didn’t see clear command-and-control traffic during testing, but based on how it’s put together, this doesn’t look like something that just runs once and stops. It looks more like it’s setting the system up so something else can happen afterwards.
+
 
 ---
 
 ## Introduction
 
-In my initial investigation into the Apex Logistics recruitment lure, I focused on the delivery chain and file structure without executing the payload.
+In my initial investigation into this Linkedin recruitment lure, I focused on the delivery chain and file structure without executing the payload.
 
 At that point, my thinking was that the main activity would probably come from one of the DLLs in the package, maybe through sideloading.
 
@@ -34,10 +34,11 @@ That wasn’t completely wrong, but it didn’t explain everything.
 
 To get a clearer picture, I moved into a lab and looked at what actually happens when the file is run using:
 
-- Process Explorer  
-- Process Monitor  
-- Burp Suite  
-- A Windows 10 VM ("CannonFodder")  
+- A Windows 10 VM
+- Process Explorer   
+- Burp Suite
+- WireShark
+- A Kali Linux VM for file analysis
 
 ---
 
@@ -124,9 +125,8 @@ It:
 - executes zhen.mkv
 - extracts `TAIWAN.pdf`  
 - includes the password  
-- writes files into a user directory  
-- sets up persistence  
-- runs the next stage
+- sets a flag `co=sunset`
+- creates a scheduled task "Windows Update Check" which runs 'WinUpdate.bat' every 10 minutes
 
 This ties everything together, Deju isn’t just another file in the archive, it’s the component orchestrating the entire execution flow.
 
@@ -142,29 +142,18 @@ Those files were:
 - a full Python environment  
 - standard libraries  
 - compiled modules  
-- and, **MpEng.exe**
+- **MpEng.exe** and **update.dll**
+
+TAIWAN.pdf is the container for the payload.
 
 ![TAIWAN contents](Images/Taiwan_contents.png) 
 
 ---
 
-At this point, `MpEng.exe` appears to be the actual payload, masquerading as Windows Defender while running a Python-based environment.
+At this point, `update.dll` appears to be the actual payload, executed by `MpEng` which masquerades as Windows Defender while running a Python-based enviroment. 
+
 
 ![Fake Defender Python runtime in Process Explorer](Images/38_fake_defender_python_runtime.png)
-
----
-
-## Procmon Findings
-
-![Procmon showing WindowsApps activity](Images/17_proc_mon_after_exe.png)
-
-Activity is happening in:
-
-`C:\Users\<user>\AppData\Local\Microsoft\WindowsApps`
-
-Lots of file access attempts and `NAME NOT FOUND`.
-
-This behaviour suggests the payload is attempting to locate or prepare its execution environment before fully committing to the next stage.
 
 ---
 
@@ -190,7 +179,7 @@ The use of `conhost.exe --headless` ensures that execution occurs without any vi
 
 `MpEng.exe`, previously identified as a disguised Python runtime, is used to execute `update.dll`, which likely contains the core payload logic.
 
-The additional argument `sunset` suggests that execution may be controlled via parameters, potentially allowing different behaviours or modes.
+The additional argument `sunset`(seen in Deju) suggests that execution may be controlled via parameters, potentially allowing different behaviours or modes.
 
 This confirms that the scheduled task is responsible for maintaining persistent, hidden execution of the payload rather than performing immediate external communication.
 
@@ -215,6 +204,12 @@ The limited traffic captured appeared consistent with standard Windows behaviour
 No evidence of command-and-control (C2) communication or suspicious outbound HTTP/HTTPS requests was identified within the proxy-monitored traffic.
 
 Since no proxy-aware traffic was observed, further packet-level inspection was required to determine whether the payload communicated using non-proxied or non-HTTP protocols.
+
+---
+
+## WireShark Analysis
+
+
 
 ---
 
@@ -257,44 +252,18 @@ flowchart TD
 
 ---
 
-## What This Likely Is
+## What This Is
 
-This doesn’t behave like a single-purpose payload.
-
-Instead, it looks like a **multi-stage loader / backdoor-style framework** designed to establish a foothold and maintain execution over time.
-
-The use of disguised file types, staged extraction via a batch script, a bundled Python runtime, and scheduled task persistence all point towards a setup phase rather than a final objective.
-
-Rather than doing something obvious straight away, this appears to focus on **getting onto the system, staying there, and being able to run code when needed**.
 
 ---
 
 ## Potential Use
 
-I didn’t observe any clear command-and-control traffic during the analysis window, but the structure would support a range of follow-on activity.
-
-Based on what’s in place, this could be used for:
-
-- maintaining remote access to the system  
-- delivering additional payloads at a later stage  
-- collecting data or credentials  
-- contributing to a wider distributed system (e.g. botnet-style use)  
-
-At the point I observed it, the priority seems to be **access and persistence**, with any further activity likely dependent on timing, conditions, or external triggers.
 
 ---
 
 ## Level of Impact
 
-If this were executed on a real user system, I’d consider it fully compromised.
-
-Even without obvious visible behaviour:
-
-- the attacker has a reliable way to execute code  
-- persistence is already in place  
-- the system can be used for further activity at any time  
-
-The lack of immediate impact isn’t reassuring — it’s more consistent with something designed to stay under the radar.
 
 ---
 
@@ -324,31 +293,16 @@ Based on this analysis, the following indicators may be useful for detection or 
 - `.pdf` file acting as password-protected archive
 - Batch script (`Deju`) orchestrating extraction and execution
 
-**Hash (Primary Payload Archive)**
+**Hash (Primary Payload Zip Package)**
 - *f689830f201ed1612bfda4bb48e9dfba4bde9d2c4abc724f6e9f95060797e739*
 
 ---
 ## Final Thoughts
 
-This follow-up analysis helped fill in the gaps from the initial investigation.
 
-Part 1 of this investigation identified a staged delivery and some signs that multiple components were involved, but running the payload made it clearer how those components actually interact.
-
-In particular:
-
-- `Deju` acting as the execution controller  
-- `zhen.mkv` being used as a tool rather than a decoy  
-- the use of a password-protected archive to stage the next layer  
-- and the scheduled task maintaining repeated, hidden execution  
-
-I didn’t observe any direct command-and-control traffic during the analysis window, but the structure in place suggests that isn’t the immediate goal.
-
-Instead, the focus appears to be on establishing a reliable execution path and maintaining access, with any further activity likely triggered later.
-
-Overall, this behaves more like a controlled foothold than a complete attack, with the capability for further activity already in place.
 
 ---
 
 ## Original Investigation:
 
-<https://github.com/Rayza-Slyce/Apex_Logistics_Recruitment_Lure_Investigation>
+<https://github.com/Rayza-Slyce/Linkedin_Recruitment_Lure_Investigation_Pt1_Static_Analysis>
