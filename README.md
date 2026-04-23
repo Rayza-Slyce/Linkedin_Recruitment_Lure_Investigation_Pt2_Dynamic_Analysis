@@ -218,6 +218,10 @@ Since no proxy-aware traffic was observed, further packet-level inspection was r
 ## Execution Flow
 
 ```mermaid
+:::writing{variant="standard" id="48291"}
+```mermaid
+flowchart TD
+
     subgraph S1[Execution]
         A[Lure EXE executed]
         B[Decoy document shown]
@@ -243,7 +247,7 @@ Since no proxy-aware traffic was observed, further packet-level inspection was r
     end
 
     subgraph S4[Local Execution]
-        J[Task triggers periodically]
+        J[Task triggers]
         K[conhost.exe headless]
         L[MpEng.exe launched]
         M[update.dll loaded]
@@ -251,10 +255,10 @@ Since no proxy-aware traffic was observed, further packet-level inspection was r
     end
 
     subgraph S5[Network Activity]
-        N[Outbound traffic begins]
+        N[Outbound traffic]
         O[Telegram contacted]
-        P[C2 request getPage]
-        Q[C2 returns sunset link]
+        P[C2 getPage request]
+        Q[C2 returns link]
         R[sunset.txt retrieved]
         M --> N
         N --> O
@@ -262,18 +266,17 @@ Since no proxy-aware traffic was observed, further packet-level inspection was r
     end
 
     subgraph S6[Payload Delivery]
-        S[Obfuscated Python loader]
-        T[Encoded blob extracted]
-        U[Decoded and decompressed]
-        V[Final binary payload]
+        S[Python loader]
+        T[Encoded blob]
+        U[Decoded payload]
+        V[Final binary]
         R --> S --> T --> U --> V
     end
 
-    X[Persistent compromise with remote payload execution]
+    X[Persistent compromise]
     M --> X
     V --> X
-
-
+:::
 ---
 
 ## What This Is
