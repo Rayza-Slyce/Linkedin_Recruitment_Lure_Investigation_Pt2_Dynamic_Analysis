@@ -187,6 +187,10 @@ This confirms that the scheduled task is responsible for maintaining persistent,
 
 ---
 
+## Update DLL
+
+(need to look into this)
+
 ## Network Activity (Burp)
 
 Initial network monitoring was conducted using Burp Suite with traffic proxied from the analysis VM.
@@ -302,10 +306,6 @@ Response:
 - `Content-Type: text/plain`
 - Large encoded payload returned
 
----
-
-## Behavioural Summary
-
 This traffic confirms a **multi-stage C2 workflow**:
 
 1. Initial execution  
@@ -319,6 +319,22 @@ This behaviour is consistent with:
 - loader malware  
 - staged payload delivery systems  
 - evasive infrastructure design  
+
+---
+
+## Analysis of Sunset.txt
+
+The response from /links/sunset.txt contained a large obfuscated blob.
+Initial inspection suggested Base64 encoding. 
+I used Cyberchef to decode it from Base64 but it was still unreadable. Using the Detect File Type operation, I saw it was bzip2, so I decompressed it. 
+It now showed as a deflated zlib file so I used zlib inflate.
+The output was still in the most part unreadable, but I noticed 'HELLO COMPILER'... The developer was trolling. 
+I saved the data file and used my terminal in Kali to pull the strings... 
+
+![sunset.txt strings](Images/payloadblob_strings.png)
+
+
+(update with string analysis)
 
 ---
 
@@ -422,16 +438,17 @@ flowchart TD
     N --> Z
     Y --> Z
 ```
-
 ---
 
 ## What This Is
 
+(will update when finished investigation)
 
 ---
 
 ## Level of Impact
 
+(will update when finished investigation
 
 ---
 
@@ -464,6 +481,7 @@ Based on this analysis, the following indicators may be useful for detection or 
 **Hash (Primary Payload Zip Package)**
 - *f689830f201ed1612bfda4bb48e9dfba4bde9d2c4abc724f6e9f95060797e739*
 
+(need to had other important files and upload to VirusTotal and malwarebazaar)
 ---
 
 ### Reporting
@@ -479,7 +497,7 @@ The report will include supporting evidence from network captures, HTTP requests
 
 ## Final Thoughts
 
-
+(will update when finished)
 
 ---
 
