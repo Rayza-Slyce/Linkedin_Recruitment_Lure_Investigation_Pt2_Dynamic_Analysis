@@ -338,8 +338,49 @@ I saved the data file and used my terminal in Kali to pull the strings...
 
 ![sunset.txt strings](Images/payloadblob_strings.png)
 
+- **Dynamic Python execution**
+  - `getattr`, `__import__`, `lambda`, `map`, `join`, `chr`
+  
+  This suggests the code is building and executing things at runtime rather than storing them clearly.
 
-(update with string analysis)
+- **Built-in decoding**
+  - `base64`, `b64decoder`, `zlib`, `bytearray`
+  
+  So the payload is likely decoding even more data during execution.
+
+- **System-level access**
+  - `ctypes`, `WinDLL`, `System.Reflection`
+  
+  This means it can interact directly with Windows APIs, not just run simple scripts.
+
+- **File handling**
+  - `open`, `read`, `write`, `path`, `executable`
+  
+  So it can read/write files and manage its own execution environment.
+
+- **Weird encoded strings**
+  - e.g. `N$u@B.D@W.P@R`
+  
+  These don’t look random — likely more obfuscated data such as commands, URLs, or keys.
+
+---
+
+### Overall take
+
+At this point, it looks like the blob isn’t just a script, but a **compiled or serialised Python payload** (likely marshalled bytecode).
+
+Combined with what I saw in Wireshark:
+
+- `/getPage?id=sunset` returns a link  
+- `/links/sunset.txt` delivers this payload  
+
+This confirms a **multi-stage setup**, where:
+
+1. The initial request gets instructions  
+2. A second request pulls down the payload  
+3. The payload then handles decoding and execution itself  
+
+This kind of setup makes analysis harder and allows the attacker to change behaviour without changing the initial file.
 
 ---
 
@@ -426,7 +467,7 @@ Based on this analysis, the following indicators may be useful for detection or 
 **Hash (Primary Payload Zip Package)**
 - *f689830f201ed1612bfda4bb48e9dfba4bde9d2c4abc724f6e9f95060797e739*
 
-(need to had other important files and upload to VirusTotal and malwarebazaar)
+(I need to hash the other important individual files and upload to VirusTotal and malwarebazaar)
 ---
 
 ### Reporting
