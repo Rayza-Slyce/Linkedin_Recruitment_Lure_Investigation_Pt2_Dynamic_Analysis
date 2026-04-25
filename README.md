@@ -378,8 +378,6 @@ I saved the data file and used my terminal in Kali to pull the strings...
 
 ---
 
-### Overall take
-
 At this point, it looks like the blob isn’t just a script, but a **compiled or serialised Python payload** (likely marshalled bytecode).
 
 Combined with what I saw in Wireshark:
@@ -449,6 +447,8 @@ A targeted port scan revealed:
 - Port 56001/tcp – open
 - Ports 80 and 443 – filtered (no response)
 
+![Open Port](Images/nmap_open_port.png)
+
 Attempts to connect over HTTP resulted in timeouts, confirming there is no public web service exposed.
 
 Direct interaction with port 56001 using OpenSSL confirmed the presence of a TLS service:
@@ -456,6 +456,8 @@ Direct interaction with port 56001 using OpenSSL confirmed the presence of a TLS
 - Self-signed certificate
 - Randomised common name (`Pzyzvzapjmw`)
 - Extremely long validity period (to 2090)
+
+![Self Signed Certificate](Images/self-signed-cert.png)
 
 This is not consistent with legitimate web infrastructure and strongly suggests a custom encrypted service.
 
