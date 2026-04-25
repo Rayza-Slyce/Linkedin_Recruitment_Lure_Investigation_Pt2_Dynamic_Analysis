@@ -19,7 +19,8 @@ Instead of one obvious payload, this is a **multi-stage setup** using:
 
 - disguised files  
 - a batch script to control execution - a password-protected archive  
-- and a bundled Python environment running under a fake system process name  
+- and a bundled, complete Python environment running under a fake system process name
+- persistent C2 communication 
 
 ---
 
@@ -154,7 +155,7 @@ TAIWAN.pdf is the container for the payload.
 
 ---
 
-At this point, `update.dll` appears to be the actual payload, executed by `MpEng` which masquerades as Windows Defender while running a Python-based enviroment. 
+At this point, it appears`update.dll` could be the actual payload, executed by `MpEng` which masquerades as Windows Defender while running a Python-based enviroment. 
 
 
 ![Fake Defender Python runtime in Process Explorer](Images/38_fake_defender_python_runtime.png)
@@ -227,9 +228,7 @@ Following execution, network activity was immediately observed. Within seconds, 
 
 ---
 
-## Key Observations
-
-### 1. Immediate Network Burst
+### Immediate Network Burst
 
 - Rapid outbound connections to multiple external IP addresses
 - Mix of:
@@ -244,7 +243,7 @@ Following execution, network activity was immediately observed. Within seconds, 
 
 ---
 
-### 2. Telegram Infrastructure Contact
+### Telegram Infrastructure Contact
 
 DNS query observed:
 
@@ -260,7 +259,7 @@ This suggests use of Telegram infrastructure, likely for signalling, fallback co
 
 ---
 
-### 3. Suspicious HTTP C2 Communication
+### Suspicious HTTP C2 Communication
 
 Primary suspicious host identified:
 
@@ -278,7 +277,7 @@ Primary suspicious host identified:
 
 ---
 
-### 4. C2 Response (Stage Trigger)
+### C2 Response (Stage Trigger)
 
 Server response:
 
@@ -294,7 +293,7 @@ Returns:
 
 ---
 
-### 5. Payload Retrieval
+### Payload Retrieval
 
 Second request observed:
 
@@ -317,7 +316,7 @@ This behaviour is consistent with:
 
 - loader malware  
 - staged payload delivery systems  
-- evasive infrastructure design  
+- evasive infrastructure design
 
 ---
 
