@@ -48,7 +48,7 @@ To get a clearer picture, I moved into a lab and looked at what actually happens
 When the file is executed, a document opens straight away:
 
 
-![Decoy document opened on execution](Images/14_notepad_after_exe.png)
+![Decoy document opened on execution](Images/01_notepad_after_exe.png)
 
 
 The aim of this document is to convince the user they have opened a legitimate document and distract them from what is going on in the background... However, the document was a 'Google Ads Playbook', not what the user would expect after clicking a link for 'Complete Information about the job and products'. This struck me as sloppy at first, likely just lazy reuse of the decoy document...
@@ -59,13 +59,13 @@ While the process was running I noticed `zhen.mkv`, a file I had seen earlier bu
 However, it turned out to be a RAR archive, and once executed it began triggering the loading of multiple DLLs in the background.
 
 
-![Files Executing in Background](Images/zhen_mkv.png)
+![Files Executing in Background](Images/02_zhen_mkv.png)
 
 
 The process ended with a file named MpEng.exe, which at first glance looked like Microsoft Defender, but the company name of Python Software Foundation made it clear that wasn't the case. 
 
 
-![Initial Process Explorer view after execution](Images/16_procexp_after_exe_2026-04-20_00-20.png)
+![Initial Process Explorer view after execution](Images/03_procexp_after_exe_2026-04-20_00-20.png)
 
 It became clear this process wasn’t actually Defender at all, but a Python-based runtime executing scripts in the background.
 
@@ -76,9 +76,9 @@ It became clear this process wasn’t actually Defender at all, but a Python-bas
 I went back to the extracted files and noticed something I’d missed earlier. The files I thought were just decoys in my earlier investigation were hidden in a `_` folder:
 
 
-![Archive structure showing hidden underscore folder](Images/29_payload_subfolder_structure.png)
+![Archive structure showing hidden underscore folder](Images/04_payload_subfolder_structure.png)
 
-![Files inside hidden underscore folder](Images/30_payload_hidden_components_in_underscore_folder.png)
+![Files inside hidden underscore folder](Images/05_payload_hidden_components_in_underscore_folder.png)
 
 I’d already seen that `zhen.mkv` wasn’t what it appeared to be, so finding these files grouped together made it clear they weren’t random decoys, they were part of the actual execution chain.
 
@@ -88,7 +88,7 @@ I’d already seen that `zhen.mkv` wasn’t what it appeared to be, so finding t
 
 Checking the real file types changed everything:
 
-![File type identification showing disguised components](Images/31_file_type_identification_disguised_components.png)
+![File type identification showing disguised components](Images/06_file_type_identification_disguised_components.png)
 
 - `.mkv` → executable  
 - `.pdf` → archive  
@@ -100,7 +100,7 @@ This is where it became clearer what was happening.
 
 ## zhen.mkv 
 
-![PE structure of zhen.mkv](Images/32_zhen_mkv_pe_structure.png)
+![PE structure of zhen.mkv](Images/07_zhen_mkv_pe_structure.png)
 
 This is actually a renamed **WinRAR command line tool**.
 
@@ -110,7 +110,7 @@ So not the payload itself, but something used to unpack it.
 
 ## TAIWAN.pdf 
 
-![TAIWAN archive prompting for password](Images/34_taiwan_contents.png)
+![TAIWAN archive prompting for password](Images/08_taiwan_contents.png)
 
 Despite the name, this isn’t a PDF. It’s a password-protected archive.
 
@@ -118,7 +118,7 @@ Despite the name, this isn’t a PDF. It’s a password-protected archive.
 
 ## Deju 
 
-![Deju batch script content](Images/33_sed_Deju.png)
+![Deju batch script content](Images/09_sed_Deju.png)
 
 This file is the key component in delivering the payload.
 
@@ -138,7 +138,7 @@ This ties everything together, Deju isn’t just another file in the archive, it
 I used the password to unpack Taiwan.pdf
 It contains a large number of files rather than one obvious payload.
 
-![1876 files](Images/1876_files.png)
+![1876 files](Images/10_1876_files.png)
 
 Those files were:
 
@@ -147,14 +147,14 @@ Those files were:
 - compiled modules  
 - **MpEng.exe** and **update.dll**
 
-![TAIWAN contents](Images/Taiwan_contents.png) 
+![TAIWAN contents](Images/11_Taiwan_contents.png) 
 
 ---
 
 At this point, it appears there is no single payload, instead multiple staged components deliver it, executed by `MpEng` which masquerades as Windows Defender while running a Python-based enviroment. 
 
 
-![Fake Defender Python runtime in Process Explorer](Images/38_fake_defender_python_runtime.png)
+![Fake Defender Python runtime in Process Explorer](Images/12_fake_defender_python_runtime.png)
 
 ---
 
@@ -164,7 +164,7 @@ After seeing that Deju had created a "WinUpdate" scheduled task, I checked Task 
 
 **The system is now persistently compromised at user level**
 
-![Persistence](Images/WinUpdate.png)
+![Persistence](Images/13_WinUpdate.png)
 
 
 ### WinUpdate.bat Behaviour
@@ -206,7 +206,7 @@ No proxy-aware HTTP/HTTPS traffic attributable to the payload was observed durin
 - Initial execution of the lure
 - Subsequent execution via the scheduled task (WinUpdate.bat)
 
-![Burp showing no clearly malicious outbound traffic](Images/37_no_significant_traffic.png) 
+![Burp showing no clearly malicious outbound traffic](Images/14_no_significant_traffic.png) 
 
 The limited traffic captured appeared consistent with standard Windows behaviour, including SmartScreen and trust validation requests to Microsoft domains such as:
 
@@ -227,7 +227,7 @@ I reverted to a pre-infection snapshot of my VM for a clean baseline, set wiresh
 
 Following execution, network activity was immediately observed. Within seconds, the system initiated multiple outbound connections, the first of which was a connection to a Telegram IP. 
 
-![Telegram Traffic](Images/initial_exe_wireshark.png)  
+![Telegram Traffic](Images/15_initial_exe_wireshark.png)  
 
 ---
 
@@ -242,8 +242,6 @@ Following execution, network activity was immediately observed. Within seconds, 
   - beaconing
   - infrastructure discovery
   - payload retrieval
-
-![Conversation Summary](Images/traffic-convo-summary.png)
 
 ---
 
@@ -291,7 +289,7 @@ Returns:
 
     http://172.86.89.235/links/sunset.txt
 
-![Get Sunset](Images/sunset_delivery.png)
+![Get Sunset](Images/16_sunset_delivery.png)
 
 **Assessment:**
 - This endpoint acts as a tasking or redirect layer
@@ -328,13 +326,23 @@ This behaviour is consistent with:
 
 After delivery of the `/sunset.txt` payload, C2 communication was then made with IP 15.235.156.143 via port 56001. 
 
-![Second C2](Images/second_c2.png) 
+![Second C2](Images/17_second_c2.png) 
 
 This seemed unusual and given the high volume of communication that remained persistent and consistent during 40 minutes of observation, encompassing multiple 'scheduled tasks', this is likely the primary C2 server.
+
+![After 5 Mins](Images/18_after_5_mins.png)
+![After 10 Mins](Images/19_after_10_mins.png)
+![After 35 Mins](Images/20_after_35_mins.png)
 
 No further communication attempts were observed with other IP addresses during this window, just consistent, repeated communication with 15.235.156.143. 
 
 This suggests that the 'scheduled task' is in place for optional future amendments or instructions for the payload.
+
+## Conversation Summary 
+
+This is the conversation summary after 40 mins of observation showing long duration of connection with IP 15.235.156.143
+
+![Conversation Summary](Images/21_traffic_summary_40min)
 
 ---
 
@@ -343,17 +351,17 @@ This suggests that the 'scheduled task' is in place for optional future amendmen
 The response from /links/sunset.txt contained what looked like obsfucated Python and a large obfuscated blob.
 Initial inspection suggested Base64 encoding. 
 
-![sunset.txt contents](Images/get_sunset_request.png) 
+![sunset.txt contents](Images/22_get_sunset_request.png) 
 
 I used Cyberchef to decode it from Base64 but it was still unreadable. Using the Detect File Type operation, I saw it was bzip2, so I decompressed it. 
 It now showed as a deflated zlib file so I used zlib inflate.
 
-![Decoded Blob](Images/cyberchef.png)
+![Decoded Blob](Images/23_cyberchef.png)
 
 The output was still in the most part unreadable, but I noticed 'HELLO COMPILER'... The developer was trolling. 
 I saved the data file and used my terminal in Kali to pull the strings... 
 
-![sunset.txt strings](Images/payloadblob_strings.png)
+![sunset.txt strings](Images/24_payloadblob_strings.png)
 
 - **Dynamic Python execution**
   - `getattr`, `__import__`, `lambda`, `map`, `join`, `chr`
@@ -406,7 +414,7 @@ This kind of setup makes analysis harder and allows the attacker to change behav
 
 ### Telegram Infrastructure (149.154.167.99)
 
-![Telegram IP](Images/Screenshot_20260423-170435~2.png) 
+![Telegram IP](Images/25_Telegram_IP.png) 
 
 Analysis of network traffic identified outbound connections to `149.154.167.99`, which resolves to Telegram infrastructure (ASN: AS62041 – Telegram Messenger Inc).
 
@@ -421,7 +429,7 @@ This IP is not inherently malicious but is being leveraged as part of the malwar
 
 ### Command & Control Server (172.86.89.235)
 
-![C2 Server](Images/Screenshot_20260423-170517~2.png)
+![C2 Server](Images/26_C2_1.png)
 
 Further investigation identified `172.86.89.235` as the primary suspicious host involved in payload delivery.
 
@@ -442,7 +450,7 @@ This host is functioning as an active command-and-control (C2) or staging server
 
 ### Persistent C2 Server (15.235.156.143)
 
-![Persistent C2]
+![Persistent C2](Images/27_C2.png)
 
 The IP is hosted by OVH in Singapore, within a reassigned VPS range. It appears to be host only, with no web server content. This type of infrastructure is commonly used due to its low cost and ease of provisioning.
 
@@ -451,7 +459,7 @@ A targeted port scan revealed:
 - Port 56001/tcp – open
 - Ports 80 and 443 – filtered (no response)
 
-![Open Port](Images/nmap_open_port.png)
+![Open Port](Images/28_nmap_open_port.png)
 
 Attempts to connect over HTTP resulted in timeouts, confirming there is no public web service exposed.
 
@@ -461,7 +469,7 @@ Direct interaction with port 56001 using OpenSSL confirmed the presence of a TLS
 - Randomised common name (`Pzyzvzapjmw`)
 - Extremely long validity period (to 2090)
 
-![Self Signed Certificate](Images/self-signed-cert.png)
+![Self Signed Certificate](Images/29_self-signed-cert.png)
 
 This is not consistent with legitimate web infrastructure and strongly suggests a custom encrypted service.
 
