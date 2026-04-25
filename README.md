@@ -1,7 +1,7 @@
 # Linkedin Recruitment Lure Investigation 
 ## Part 2 – Dynamic Analysis & Payload Behaviour
 
-Date: 23rd April 2026
+Date: 25th April 2026
 
 ---
 
@@ -155,7 +155,7 @@ TAIWAN.pdf is the container for the payload.
 
 ---
 
-At this point, it appears`update.dll` could be the actual payload, executed by `MpEng` which masquerades as Windows Defender while running a Python-based enviroment. 
+At this point, it appears there is no single payload, instead multiple staged components deliver it, executed by `MpEng` which masquerades as Windows Defender while running a Python-based enviroment. 
 
 
 ![Fake Defender Python runtime in Process Explorer](Images/38_fake_defender_python_runtime.png)
@@ -186,13 +186,21 @@ The use of `conhost.exe --headless` ensures that execution occurs without any vi
 
 The additional argument `sunset`(seen in Deju) suggests that execution may be controlled via parameters, potentially allowing different behaviours or modes.
 
-This confirms that the scheduled task is responsible for maintaining persistent, hidden execution of the payload rather than performing immediate external communication.
+This confirms that the scheduled task is responsible for maintaining persistent, hidden execution of the payload.
 
 ---
 
 ## Update.dll
 
 (need to look into this)
+
+---
+
+## MpEng.exe
+
+(need to look into this)
+
+---
 
 ## Network Activity (Burp)
 
@@ -318,6 +326,12 @@ This behaviour is consistent with:
 - staged payload delivery systems  
 - evasive infrastructure design
 
+## 2nd Suspicious IP Identified
+
+After delivery of the `/sunset.txt` payload, C2 communication was then made with IP 15.235.156.143 via port 56001. This seemed unusual and given the high volume of data exchange, it could be a C2 listener. This communication remained persistent during 40 minutes of observation 
+encompassing multiple 'scheduled tasks'. No further communication attempts were observed with other IP addresses during this window, just consistent, repeated communication with 15.235.156.143. 
+This suggests that the 'scheduled task' is in place for optional future amendments or instructions for the payload.
+
 ---
 
 ## Analysis of Sunset.txt
@@ -371,13 +385,16 @@ At this point, it looks like the blob isn’t just a script, but a **compiled or
 Combined with what I saw in Wireshark:
 
 - `/getPage?id=sunset` returns a link  
-- `/links/sunset.txt` delivers this payload  
+- `/links/sunset.txt` delivers this payload
+
+- further communication and data transer with a second IP
 
 This confirms a **multi-stage setup**, where:
 
 1. The initial request gets instructions  
 2. A second request pulls down the payload  
-3. The payload then handles decoding and execution itself  
+3. The payload then handles decoding and execution itself
+4. The payload is then monitored and updated via persistent C2 connection 
 
 This kind of setup makes analysis harder and allows the attacker to change behaviour without changing the initial file.
 
@@ -421,9 +438,20 @@ This host is functioning as an active command-and-control (C2) or staging server
 
 ---
 
+### Persistent C2 Server (15.235.156.143)
+
+![Persistent C2]
+
+- Hosting provider: OHC
+- Hostname: ip143.ip-15-235-156.net
+- Location: Singapore 
+- No active HTTP service, server only
+
+---
+
 ## Execution Flow
 
-(will add mermaid when finished investigation)
+(will add mermaid diagram when finished investigation)
 
 ## Malware Analysis Conclusion 
 
