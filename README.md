@@ -291,6 +291,8 @@ Returns:
 
     http://172.86.89.235/links/sunset.txt
 
+![Get Sunset](Images/sunset_delivery.png)
+
 **Assessment:**
 - This endpoint acts as a tasking or redirect layer
 - Confirms a staged delivery mechanism
@@ -324,7 +326,11 @@ This behaviour is consistent with:
 
 ## Second Suspicious IP Identified
 
-After delivery of the `/sunset.txt` payload, C2 communication was then made with IP 15.235.156.143 via port 56001. This seemed unusual and given the high volume of communication that remained persistent and consistent during 40 minutes of observation, encompassing multiple 'scheduled tasks', this is likely the primary C2 server.
+After delivery of the `/sunset.txt` payload, C2 communication was then made with IP 15.235.156.143 via port 56001. 
+
+![Second C2](Images/second_c2.png) 
+
+This seemed unusual and given the high volume of communication that remained persistent and consistent during 40 minutes of observation, encompassing multiple 'scheduled tasks', this is likely the primary C2 server.
 
 No further communication attempts were observed with other IP addresses during this window, just consistent, repeated communication with 15.235.156.143. 
 
