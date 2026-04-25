@@ -512,25 +512,25 @@ Based on this analysis, the following indicators may be useful for detection or 
 - Batch script (`Deju`) orchestrating extraction and execution
 
 
-**Hash List** (to be updated)
+## Hash List (to be updated)
 
-# Primary Payload Zip Package
+**Primary Payload Zip Package**
 
 *f689830f201ed1612bfda4bb48e9dfba4bde9d2c4abc724f6e9f95060797e739*
 
-# Position Details and Compensation Policy For Emp. EXE
+**Position Details and Compensation Policy For Emp. EXE**
 
-# Deju
+**Deju**
 
-# TAIWAN.pdf
+**TAIWAN.pdf**
 
-# Zhen.mkv
+**Zhen.mkv**
 
-# Update.dll
+**Update.dll**
 
-# MpEng.exe
+**MpEng.exe** 
 
-# Decoded sunset.txt
+**Decoded sunset.txt**
 
 ---
 
