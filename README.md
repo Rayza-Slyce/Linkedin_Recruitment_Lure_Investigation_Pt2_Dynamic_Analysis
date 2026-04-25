@@ -337,7 +337,7 @@ This suggests that the 'scheduled task' is in place for optional future amendmen
 The response from /links/sunset.txt contained what looked like obsfucated Python and a large obfuscated blob.
 Initial inspection suggested Base64 encoding. 
 
-![sunset.txt contents](Images/Follow_stream_sunset_txt.png) 
+![sunset.txt contents](Images/get_sunset_request.png) 
 
 I used Cyberchef to decode it from Base64 but it was still unreadable. Using the Detect File Type operation, I saw it was bzip2, so I decompressed it. 
 It now showed as a deflated zlib file so I used zlib inflate.
