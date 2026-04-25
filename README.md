@@ -149,8 +149,6 @@ Those files were:
 - compiled modules  
 - **MpEng.exe** and **update.dll**
 
-TAIWAN.pdf is the container for the payload.
-
 ![TAIWAN contents](Images/Taiwan_contents.png) 
 
 ---
@@ -328,8 +326,8 @@ This behaviour is consistent with:
 
 ## 2nd Suspicious IP Identified
 
-After delivery of the `/sunset.txt` payload, C2 communication was then made with IP 15.235.156.143 via port 56001. This seemed unusual and given the high volume of data exchange, it could be a C2 listener. This communication remained persistent during 40 minutes of observation 
-encompassing multiple 'scheduled tasks'. No further communication attempts were observed with other IP addresses during this window, just consistent, repeated communication with 15.235.156.143. 
+After delivery of the `/sunset.txt` payload, C2 communication was then made with IP 15.235.156.143 via port 56001. This seemed unusual and given the high volume of communication that remained persistent during 40 minutes of observation, encompassing multiple 'scheduled tasks', this is likely the primary C2 server.
+No further communication attempts were observed with other IP addresses during this window, just consistent, repeated communication with 15.235.156.143. 
 This suggests that the 'scheduled task' is in place for optional future amendments or instructions for the payload.
 
 ---
@@ -442,10 +440,26 @@ This host is functioning as an active command-and-control (C2) or staging server
 
 ![Persistent C2]
 
-- Hosting provider: OHC
-- Hostname: ip143.ip-15-235-156.net
-- Location: Singapore 
-- No active HTTP service, server only
+The IP is hosted by OVH in Singapore, within a reassigned VPS range. It appears to be host only, with no web server content. This type of infrastructure is commonly used due to its low cost and ease of provisioning.
+
+A targeted port scan revealed:
+
+- Port 56001/tcp – open
+- Ports 80 and 443 – filtered (no response)
+
+Attempts to connect over HTTP resulted in timeouts, confirming there is no public web service exposed.
+
+Direct interaction with port 56001 using OpenSSL confirmed the presence of a TLS service:
+
+- Self-signed certificate
+- Randomised common name (`Pzyzvzapjmw`)
+- Extremely long validity period (to 2090)
+
+This is not consistent with legitimate web infrastructure and strongly suggests a custom encrypted service.
+
+When combined with prior Wireshark observations (repeated TLS connections initiated by the malware) this behaviour is consistent with a command-and-control (C2) channel.
+
+The host appears to function as a remote endpoint for encrypted communication, likely used for tasking or data exchange.
 
 ---
 
@@ -491,20 +505,28 @@ Based on this analysis, the following indicators may be useful for detection or 
 - `.pdf` file acting as password-protected archive
 - Batch script (`Deju`) orchestrating extraction and execution
 
-**Hash (Primary Payload Zip Package)**
-- *f689830f201ed1612bfda4bb48e9dfba4bde9d2c4abc724f6e9f95060797e739*
+
+**Hash List** 
+
+# Primary Payload Zip Package
+
+*f689830f201ed1612bfda4bb48e9dfba4bde9d2c4abc724f6e9f95060797e739*
+
+#
+  
 
 (I need to hash the other important individual files and upload to VirusTotal and malwarebazaar)
 ---
 
 ### Reporting
 
-Based on the confirmed malicious behaviour and supporting network evidence, this infrastructure will be reported to the relevant providers:
+Based on the confirmed malicious behaviour and supporting network evidence, this infrastructure was reported to the relevant providers:
 
 - Telegram (abuse@telegram.org) – for potential platform abuse
 - RouterHosting / Cloudzy (abuse-reports@cloudzy.com) – for active malware hosting
-
-The report will include supporting evidence from network captures, HTTP requests, and payload analysis to assist with investigation and potential takedown.
+- OVH (noc@ovh.net) - for active malware hosting
+  
+The report included supporting evidence from network captures, HTTP requests, and payload analysis to assist with investigation and potential takedown.
 
 ---
 
