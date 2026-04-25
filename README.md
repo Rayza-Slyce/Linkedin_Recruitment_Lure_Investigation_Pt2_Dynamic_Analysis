@@ -229,7 +229,7 @@ I reverted to a pre-infection snapshot of my VM for a clean baseline, set wiresh
 
 Following execution, network activity was immediately observed. Within seconds, the system initiated multiple outbound connections, the first of which was a connection to a Telegram IP. 
 
-![Telegram Traffic](Images/initial_exe_wireshark)  
+![Telegram Traffic](Images/initial_exe_wireshark.png)  
 
 ---
 
