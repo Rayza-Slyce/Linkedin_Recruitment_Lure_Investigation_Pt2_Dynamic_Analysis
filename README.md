@@ -166,8 +166,7 @@ After seeing that Deju had created a "WinUpdate" scheduled task, I checked Task 
 
 **The system is now persistently compromised at user level**
 
-![Persistence](Images/persistence.png)
-
+![Persistence](Images/WinUpdate.png)
 
 
 ### WinUpdate.bat Behaviour
@@ -230,16 +229,17 @@ I reverted to a pre-infection snapshot of my VM for a clean baseline, set wiresh
 
 Following execution, network activity was immediately observed. Within seconds, the system initiated multiple outbound connections, the first of which was a connection to a Telegram IP. 
 
-![Telegram Traffic](Images/tcp_traffic_telegram.png)  
+![Telegram Traffic](Images/initial_exe_wireshark)  
 
 ---
 
-### Immediate Network Burst
+### Network Activity Summary 
 
-- Rapid outbound connections to multiple external IP addresses
+- Connections made to multiple external IP addresses
 - Mix of:
-  - TCP (primarily port 443 and 80)
+  - TCP 
   - DNS queries
+- Packets of data exchanged between host and external IP's
 - Behaviour consistent with:
   - beaconing
   - infrastructure discovery
