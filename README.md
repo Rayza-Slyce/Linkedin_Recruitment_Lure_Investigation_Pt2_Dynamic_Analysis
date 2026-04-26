@@ -522,8 +522,6 @@ Initial inspection suggested Base64 encoding.
 
 I used Cyberchef to apply the same decoding techniques (Base64 → Bzip2 → Zlib) I had used for the 'support' blob.
 
-![Decoded Blob](Images/23_cyberchef.png)
-
 Again the output was still in the most part unreadable so I saved the data file and used my terminal in Kali to pull the strings... 
 
 ![sunset.txt strings](Images/24_payloadblob_strings.png)
