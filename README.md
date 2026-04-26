@@ -304,11 +304,15 @@ Using the XOR key identified in `update.dll` (`ditmechina`), I decoded the conte
 
 ![Support XOR Decode](Images/33_support_xor_decode.png)  
 
+
+
 The result was not immediately readable. Instead, it revealed what looked like obsfucated Python and a large obfuscated blob.
 Initial inspection suggested Base64 encoding. 
 
 I used Cyberchef to decode it from Base64 but it was still unreadable. Using the Detect File Type operation, I saw it was bzip2, so I decompressed it. 
 It now showed as a deflated zlib file so I used zlib inflate.
+
+
 
 ![Support Blob Decode](Images/36_cyberchef_support_blob.png)
 
