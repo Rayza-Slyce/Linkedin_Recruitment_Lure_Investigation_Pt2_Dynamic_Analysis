@@ -444,7 +444,7 @@ This suggests a clear transition from:
 
 The conversation summary after 40 minutes of observation shows a sustained connection with `15.235.156.143`, with continuous packet exchange over time.
 
-![Conversation Summary](Images/21_traffic_summary_40min)
+![Conversation Summary](Images/21_traffic_summary_40min.png) 
 
 ---
 
