@@ -323,7 +323,7 @@ Although the output was not clean, string analysis showed several important indi
 - `HELLO DECOMPILER`
 
 
-![Support Blob Decode](Images/37_support_blob_strings.png)
+![Support Blob Strings](Images/37_support_blob_strings.png)
 
 
 This strongly suggests that the payload is not simple script content, but **compiled or serialised Python code**, designed to execute dynamically at runtime rather than exist in a readable format on disk.
@@ -515,18 +515,16 @@ The use of programmatic HTTP requests, obfuscated payload delivery, and sustaine
 
 ## Analysis of Sunset.txt
 
-The response from /links/sunset.txt contained what looked like obsfucated Python and a large obfuscated blob.
+The response from /links/sunset.txt contained more obsfucated Python and another large obfuscated blob like i had seen in `support.ico`.
 Initial inspection suggested Base64 encoding. 
 
 ![sunset.txt contents](Images/22_get_sunset_request.png) 
 
-I used Cyberchef to decode it from Base64 but it was still unreadable. Using the Detect File Type operation, I saw it was bzip2, so I decompressed it. 
-It now showed as a deflated zlib file so I used zlib inflate.
+I used Cyberchef to apply the same decoding techniques (Base64 → Bzip2 → Zlib) I had used for the 'support' blob.
 
 ![Decoded Blob](Images/23_cyberchef.png)
 
-The output was still in the most part unreadable, but I noticed 'HELLO COMPILER'... The developer was trolling. 
-I saved the data file and used my terminal in Kali to pull the strings... 
+Again the output was still in the most part unreadable so I saved the data file and used my terminal in Kali to pull the strings... 
 
 ![sunset.txt strings](Images/24_payloadblob_strings.png)
 
@@ -557,9 +555,7 @@ I saved the data file and used my terminal in Kali to pull the strings...
 
 ---
 
-At this point, it looks like the blob isn’t just a script, but a **compiled or serialised Python payload** (likely marshalled bytecode).
-
-Combined with what I saw in Wireshark:
+Combined with earlier analysis of 'support.ico' and what I saw in Wireshark:
 
 - `/getPage?id=sunset` returns a link  
 - `/links/sunset.txt` delivers this payload
@@ -568,9 +564,9 @@ Combined with what I saw in Wireshark:
 
 This confirms a **multi-stage setup**, where:
 
-1. The initial request gets instructions  
-2. A second request pulls down the payload  
-3. The payload then handles decoding and execution itself
+1. The initial 'support' payload sends a request to get instructions  
+2. A second request pulls down another payload  
+3. That payload then handles decoding and execution itself
 4. The payload is then monitored and updated via persistent C2 connection 
 
 This kind of setup makes analysis harder and allows the attacker to change behaviour without changing the initial file.
