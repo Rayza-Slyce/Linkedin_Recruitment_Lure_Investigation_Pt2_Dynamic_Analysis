@@ -327,7 +327,7 @@ Although the output was not clean, string analysis showed several important indi
 
 
 This strongly suggests that the payload is not simple script content, but **compiled or serialised Python code**, designed to execute dynamically at runtime rather than exist in a readable format on disk.
-The inclusion of `HELLO DECOMPILER` suggests the dev is trolling, they know decoding has gone as far as it can with full decompilation of the obsfucated Python code. 
+The inclusion of HELLO DECOMPILER appears to be a deliberate anti-analysis marker, suggesting the developer expected this layer to be inspected.
 
 The contained artefacts don't appear to be random. They suggest that the payload is structured to track or manage some form of runtime state, rather than simply executing a fixed script.
 
@@ -491,9 +491,29 @@ This suggests a clear transition from:
 
 ## Conversation Summary 
 
-The conversation summary after 40 minutes of observation shows a sustained connection with `15.235.156.143`, with continuous packet exchange over time.
+Extended packet capture over a 40-minute period revealed a consistent and sustained communication pattern between the infected system and 15.235.156.143
 
 ![Conversation Summary](Images/21_traffic_summary_40min.png) 
+
+Unlike the initial interaction with 172.86.89.235, which followed a clear request/response pattern for payload delivery, this connection remained active for the duration of observation.
+
+### Key characteristics observed:
+
+- Continuous TLS-encrypted traffic
+- Long-lived connection rather than short, repeated requests
+- No significant communication with new external hosts during this period
+- Activity persisted across multiple scheduled task execution intervals
+
+This behaviour is not consistent with normal application traffic or one-time payload retrieval. Instead, it suggests the establishment of a persistent communication channel.
+
+When viewed in the context of earlier activity:
+
+- 172.86.89.235 appears to function as a staging server, delivering encoded payloads
+- 15.235.156.143 appears to act as a persistent endpoint, maintaining ongoing communication
+
+This separation of roles indicates a more structured infrastructure design, where initial delivery and long-term control are handled independently.
+
+At this stage, while the exact content of the encrypted communication could not be determined, the consistency and duration of the connection strongly suggest this channel is being used for ongoing tasking, monitoring, or data exchange.
 
 ---
 
@@ -515,7 +535,7 @@ The use of programmatic HTTP requests, obfuscated payload delivery, and sustaine
 
 ## Analysis of Sunset.txt
 
-The response from /links/sunset.txt contained more obsfucated Python and another large obfuscated blob like i had seen in `support.ico`.
+The response from /links/sunset.txt contained more obfuscated Python and another large obfuscated blob like i had seen in `support.ico`.
 Initial inspection suggested Base64 encoding. 
 
 ![sunset.txt contents](Images/22_get_sunset_request.png) 
@@ -549,25 +569,27 @@ Again the output was still in the most part unreadable so I saved the data file 
 - **Weird encoded strings**
   - e.g. `N$u@B.D@W.P@R`
   
-  These don’t look random — likely more obfuscated data such as commands, URLs, or keys.
+  These don’t look random, likely more obfuscated data such as commands, URLs, or keys.
 
 ---
 
-Combined with earlier analysis of 'support.ico' and what I saw in Wireshark:
+Combined with earlier analysis of `support.ico`, this reinforces the idea that the malware is using a **layered and staged execution model**.
 
-- `/getPage?id=sunset` returns a link  
-- `/links/sunset.txt` delivers this payload
+Both payloads share similar characteristics:
 
-- further communication and data transer with a second IP
+- heavily obfuscated Python code  
+- multiple layers of encoding and compression  
+- dynamic execution at runtime  
 
-This confirms a **multi-stage setup**, where:
+At this stage of the investigation, it became clear that the initial payload was not acting alone, but was part of a broader system designed to retrieve and execute additional components.
 
-1. The initial 'support' payload sends a request to get instructions  
-2. A second request pulls down another payload  
-3. That payload then handles decoding and execution itself
-4. The payload is then monitored and updated via persistent C2 connection 
+This points towards a **multi-stage architecture**, where:
 
-This kind of setup makes analysis harder and allows the attacker to change behaviour without changing the initial file.
+1. An initial payload is executed locally  
+2. Additional payloads are retrieved dynamically  
+3. Each stage handles further decoding and execution  
+
+This kind of design makes analysis significantly more difficult and allows the attacker to modify behaviour without needing to change the original file.
 
 ---
 
@@ -631,7 +653,7 @@ Direct interaction with port 56001 using OpenSSL confirmed the presence of a TLS
 - Self-signed certificate
 - Randomised common name (`Pzyzvzapjmw`)
 - Extremely long validity period (extending to 2090)
--
+
 ![Self Signed Certificate](Images/29_self_signed_cert.png)
 
 These characteristics are not typical of legitimate services and are consistent with deliberately configured encrypted communication channels.
@@ -657,13 +679,72 @@ The use of a non-standard port, custom TLS configuration, and long-lived encrypt
 
 ## Malware Analysis Conclusion 
 
-(to be updated)
+What initially appeared to be a simple recruitment lure turned out to be a structured and deliberately layered malware framework.
+
+Each component within the archive plays a specific role in the overall execution chain:
+
+- Deju orchestrates execution and persistence
+- zhen.mkv enables payload extraction
+- TAIWAN.pdf conceals the main payload
+- MpEng.exe provides a disguised execution environment
+- update.dll acts as a loader
+- support.ico and sunset.txt contain encrypted, staged payloads
+
+Rather than delivering a single, obvious payload, the attacker has split functionality across multiple stages. Each layer introduces additional obfuscation and abstraction, making it difficult to analyse the malware in isolation.
+
+The use of a bundled Python runtime allows complex logic to be executed while avoiding reliance on the host system’s configuration. Combined with in-memory execution and encoded payload delivery, this significantly reduces the visibility of malicious behaviour during static inspection.
+
+The introduction of staged payload retrieval and persistent encrypted communication indicates that this is not a one-off execution, but part of an ongoing system capable of receiving instructions or updates over time.
+
+Overall, the structure and behaviour observed are consistent with a multi-stage loader or backdoor-style implant, rather than a simple dropper or commodity script.
 
 ---
 
 ## Level of Impact
 
-(to be updated)
+Even without fully reversing the final payload, the behaviour observed during dynamic analysis indicates a high-risk compromise.
+
+### Persistence
+
+- A scheduled task is created to execute the payload every 10 minutes
+- Execution is hidden (conhost.exe --headless, minimised window)
+- No visible indication to the user once initial execution is complete
+
+### Evasion
+
+- Multiple disguised file types (.mkv, .pdf, .dll, .ico)
+- Legitimate-looking process name (MpEng.exe)
+- Payloads stored in encoded form and executed in memory
+
+### Command & Control Behaviour
+
+- Initial external communication shortly after execution
+- Retrieval of staged payloads from a remote server
+- Transition to sustained encrypted communication with a secondary host
+
+### Flexibility
+
+- Payloads are delivered dynamically rather than embedded
+- Behaviour can be modified without changing the initial file
+- Use of runtime logic suggests adaptability during execution
+
+### Overall Risk Assessment
+
+This malware demonstrates characteristics commonly associated with more advanced threats:
+
+- staged payload delivery
+- obfuscated execution chains
+- persistent background execution
+- encrypted communication with external infrastructure
+
+Taken together, this indicates a system designed not just to execute once, but to maintain access and evolve over time.
+
+From a real-world perspective, this level of access could allow:
+
+- remote command execution
+- data exfiltration
+- further payload delivery
+- lateral movement depending on environment
 
 ---
 
@@ -736,7 +817,24 @@ All hashed files have also been uploaded to VirusTotal and MalwareBazaar for pub
 
 ## Final Thoughts
 
-(to be updated)
+This investigation started as what appeared to be a fairly typical LinkedIn recruitment lure.
+
+However, once executed in a controlled environment, it became clear that the underlying payload was far more complex than expected.
+
+The most notable aspect of this malware is not any single technique, but the way multiple techniques are combined:
+
+- layered payload delivery
+- heavy obfuscation
+- use of legitimate-looking components
+- separation of staging and persistent communication
+
+Individually, none of these are particularly new. Combined, they create a system that is significantly harder to detect, analyse, and fully understand without stepping through both static and dynamic analysis.
+
+One key takeaway from this process was the limitation of relying on a single perspective. Proxy-based inspection alone showed very little, while packet-level analysis revealed the broader communication pattern.
+
+This highlights the importance of approaching investigations from multiple angles, especially when dealing with staged or obfuscated malware.
+
+Overall, this case reinforces how modern malware often prioritises evasion and flexibility over simplicity, and how even relatively convincing social engineering can be backed by technically sophisticated payloads.
 
 ---
 
