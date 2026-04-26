@@ -67,7 +67,9 @@ However, it turned out to be a RAR archive, and once executed it began triggerin
 
 
 
+
 The process ended with a file named MpEng.exe, which at first glance looked like Microsoft Defender, but the company name of Python Software Foundation made it clear that wasn't the case. 
+
 
 
 
@@ -96,7 +98,9 @@ I’d already seen that `zhen.mkv` wasn’t what it appeared to be, so finding t
 
 Checking the real file types changed everything:
 
+
 ![File type identification showing disguised components](Images/06_file_type_identification_disguised_components.png)
+
 
 - `.mkv` → executable  
 - `.pdf` → archive  
@@ -146,7 +150,9 @@ This ties everything together, Deju isn’t just another file in the archive, it
 I used the password to unpack Taiwan.pdf
 It contains a large number of files rather than one obvious payload.
 
+
 ![1876 files](Images/10_1876_files.png)
+
 
 Those files were:
 
@@ -154,6 +160,7 @@ Those files were:
 - standard libraries  
 - compiled modules  
 - **MpEng.exe** and **update.dll**
+
 
 ![TAIWAN contents](Images/11_Taiwan_contents.png) 
 
@@ -171,6 +178,7 @@ At this point, it appears there is no single payload, instead multiple staged co
 After seeing that Deju had created a "WinUpdate" scheduled task, I checked Task Scheduler Library and confirmed that the created task is designed to run 'WinUpdate.bat' every 10 minutes indefinitely.
 
 **The system is now persistently compromised at user level**
+
 
 ![Persistence](Images/13_WinUpdate.png)
 
@@ -197,7 +205,9 @@ This suggests that the scheduled task is responsible for maintaining persistent,
 
 The file `MpEng.exe` initially appeared to be a legitimate Windows Defender process based on its name. However, a closer look showed that this was not the case.
 
+
 ![MpEng Strings](Images/30_mpeng_python_strings.png)
+
 
 Basic inspection revealed:
 
@@ -230,7 +240,9 @@ The naming (`MpEng.exe`) is likely an attempt to blend in with legitimate system
 
 The file `update.dll` was initially assumed to be a standard DLL. However, this quickly proved to be misleading.
 
+
 ![update.dll file type](Images/31_update_dll_filetype.png)
+
 
 Basic inspection showed:
 
@@ -246,7 +258,9 @@ This indicates the file is **not a real DLL**, but instead a Python script disgu
 
 The script contains a simple XOR-based decryption routine:
 
+
 ![XOR Decryption Function](Images/32_update_dll_xor_function.png)
+
 
 This function loops through the encrypted data and applies a repeating XOR key to recover the original payload.
 
@@ -302,8 +316,8 @@ At first glance, `support.ico` appears to be a harmless icon file. However, give
 
 Using the XOR key identified in `update.dll` (`ditmechina`), I decoded the contents of `support.ico` using CyberChef.  
 
-![Support XOR Decode](Images/33_support_xor_decode.png)  
 
+![Support XOR Decode](Images/33_support_xor_decode.png)  
 
 
 The result was not immediately readable. Instead, it revealed what looked like obsfucated Python and a large obfuscated blob.
@@ -313,8 +327,8 @@ I used Cyberchef to decode it from Base64 but it was still unreadable. Using the
 It now showed as a deflated zlib file so I used zlib inflate.
 
 
-
 ![Support Blob Decode](Images/36_cyberchef_support_blob.png)
+
 
 Although the output was not clean, string analysis showed several important indicators:  
 
@@ -352,7 +366,9 @@ No proxy-aware HTTP/HTTPS traffic attributable to the payload was observed durin
 - Initial execution of the lure
 - Subsequent execution via the scheduled task (WinUpdate.bat)
 
+
 ![Burp showing no clearly malicious outbound traffic](Images/14_no_significant_traffic.png) 
+
 
 The limited traffic captured appeared consistent with standard Windows behaviour, including SmartScreen and trust validation requests to Microsoft domains such as:
 
@@ -372,6 +388,7 @@ I needed to look deeper to identify whether there is command-and-control (C2) co
 I reverted to a pre-infection snapshot of my VM for a clean baseline, set Wireshark to capture, and opened the `Position Details and Compensation Policy For Emp.EXE` again.
 
 Following execution, network activity was immediately observed. Within seconds, the system initiated multiple outbound connections, the first of which was a connection to a Telegram IP. 
+
 
 ![Telegram Traffic](Images/15_initial_exe_wireshark.png)  
 
@@ -435,7 +452,9 @@ Returns:
 
     http://172.86.89.235/links/sunset.txt
 
+
 ![Get Sunset](Images/16_sunset_delivery.png)
+
 
 **Assessment:**
 - This endpoint acts as a tasking or redirect layer  
@@ -476,13 +495,19 @@ After initial payload retrieval from `172.86.89.235`, the system establishes a s
 
 Unlike the initial request/response pattern, this connection persists over time, with continuous TLS traffic observed.
 
+
 ![Second C2](Images/17_second_c2.png) 
 
+
+
 The connection remained active throughout 40 minutes of observation, including multiple scheduled task intervals.
+
+
 
 ![After 5 Mins](Images/18_after_5_mins.png)  
 ![After 10 Mins](Images/19_after_10_mins.png)  
 ![After 35 Mins](Images/20_after_35_mins.png)
+
 
 No further significant outbound communication to new external IPs was observed during this period. Instead, the system maintained a consistent encrypted session with `15.235.156.143`.
 
@@ -497,7 +522,9 @@ This suggests a clear transition from:
 
 Extended packet capture over a 40-minute period revealed a consistent and sustained communication pattern between the infected system and 15.235.156.143
 
+
 ![Conversation Summary](Images/21_traffic_summary_40min.png) 
+
 
 Unlike the initial interaction with 172.86.89.235, which followed a clear request/response pattern for payload delivery, this connection remained active for the duration of observation.
 
@@ -542,13 +569,17 @@ The use of programmatic HTTP requests, obfuscated payload delivery, and sustaine
 The response from /links/sunset.txt contained more obfuscated Python and another large obfuscated blob like i had seen in `support.ico`.
 Initial inspection suggested Base64 encoding. 
 
+
 ![sunset.txt contents](Images/22_get_sunset_request.png) 
+
 
 I used Cyberchef to apply the same decoding techniques (Base64 → Bzip2 → Zlib) I had used for the 'support' blob.
 
 Again the output was still in the most part unreadable so I saved the data file and used my terminal in Kali to pull the strings... 
 
+
 ![sunset.txt strings](Images/24_payloadblob_strings.png)
+
 
 - **Dynamic Python execution**
   - `getattr`, `__import__`, `lambda`, `map`, `join`, `chr`
@@ -601,7 +632,9 @@ This kind of design makes analysis significantly more difficult and allows the a
 
 ### Telegram Infrastructure (149.154.167.99)
 
+
 ![Telegram IP](Images/25_Telegram_IP.png) 
+
 
 Analysis of network traffic identified outbound connections to `149.154.167.99`, which resolves to Telegram infrastructure (ASN: AS62041 – Telegram Messenger Inc).
 
@@ -616,7 +649,9 @@ This IP is not inherently malicious but is being leveraged as part of the malwar
 
 ### Command & Control Server (172.86.89.235)
 
+
 ![C2 Server](Images/26_C2_1.png)
+
 
 Further investigation identified `172.86.89.235` as the primary suspicious host involved in payload delivery.
 
@@ -637,7 +672,9 @@ This host is functioning as an active command-and-control (C2) or staging server
 
 ### Persistent C2 Server (15.235.156.143)
 
+
 ![Persistent C2](Images/27_C2_2.png)
+
 
 The IP is hosted by OVH in Singapore within a reassigned VPS range, indicating rented infrastructure rather than a dedicated or enterprise system.
 
@@ -648,7 +685,9 @@ A targeted port scan revealed:
 - Port 56001/tcp – open
 - Ports 80 and 443 – filtered (no response)
 
+
 ![Open Port](Images/28_nmap_open_port.png)
+
 
 Attempts to interact over HTTP resulted in timeouts, reinforcing that this system is not operating as a traditional web server.
 
@@ -658,7 +697,9 @@ Direct interaction with port 56001 using OpenSSL confirmed the presence of a TLS
 - Randomised common name (`Pzyzvzapjmw`)
 - Extremely long validity period (extending to 2090)
 
+
 ![Self Signed Certificate](Images/29_self_signed_cert.png)
+
 
 These characteristics are not typical of legitimate services and are consistent with deliberately configured encrypted communication channels.
 
