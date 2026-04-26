@@ -96,7 +96,7 @@ I’d already seen that `zhen.mkv` wasn’t what it appeared to be, so finding t
 
 ## File Types
 
-Checking the real file types changed everything:
+Checking the actual file types revealed that that these also did not match their extensions:
 
 
 ![File type identification showing disguised components](Images/06_file_type_identification_disguised_components.png)
@@ -106,7 +106,7 @@ Checking the real file types changed everything:
 - `.pdf` → archive  
 - `Deju` → batch script  
 
-This is where it became clearer what was happening.
+This started to make the execution chain clearer.
 
 ---
 
