@@ -242,7 +242,7 @@ This indicates the file is **not a real DLL**, but instead a Python script disgu
 
 The script contains a simple XOR-based decryption routine:
 
-![XOR Decryption Function](Images/update_dll_xor_function.png)
+![XOR Decryption Function](Images/32_update_dll_xor_function.png)
 
 This function loops through the encrypted data and applies a repeating XOR key to recover the original payload.
 
@@ -251,14 +251,7 @@ Key observations:
 - XOR key: `ditmechina`  
 - Target file: `support.ico`  
 - File is read from the same directory as the executable  
-
----
-
-### Execution Mechanism
-
-The script dynamically constructs and executes Python code rather than calling it directly:
-
-![Exec Construction](Images/update_dll_exec.png)
+- The script dynamically constructs and executes Python code rather than calling it directly:
 
 Once resolved, this effectively runs:
 
