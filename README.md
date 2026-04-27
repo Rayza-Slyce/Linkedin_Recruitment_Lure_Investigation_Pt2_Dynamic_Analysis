@@ -426,7 +426,7 @@ This indicates early-stage communication with Telegram infrastructure. Given the
 
 ---
 
-### Suspicious HTTP C2 Communication
+### Suspicious HTTP Staging Communication
 
 Primary suspicious host identified:
 
@@ -650,7 +650,7 @@ This IP is not inherently malicious but is being leveraged as part of the malwar
 
 ---
 
-### Command & Control Server (172.86.89.235)
+### Staging / Payload Delivery Server (172.86.89.235)
 
 
 ![C2 Server](Images/26_C2_1.png)
